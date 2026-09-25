@@ -1,71 +1,67 @@
-# Encontro — PWA de inscrições
+# Encontro — inscrições
 
-Aplicação em JavaScript com front-end PWA, API Node.js/Express e PostgreSQL. Inclui formulário público, painel administrativo autenticado, busca, exportação CSV e check-in.
+Aplicação web instalável (PWA) para inscrições em eventos, com página pública e painel de organização.
 
-## Evento configurado
+## Evento
 
-- Mês: janeiro de 2027
-- Horário: 11h
-- Local: Clube Canto do Rio
-- Dia exato: ainda não informado; `EVENT_DATE` fica vazio e a interface informa que será confirmado.
+- **Quando:** janeiro de 2027, às 11h
+- **Onde:** Clube Canto do Rio
+- **Data:** será confirmada pela organização
 
-Atualize `EVENT_DATE=2027-01-DD` quando a organização confirmar o dia. A data deve pertencer a janeiro de 2027. Os demais dados ficam em variáveis de ambiente, sem valores inventados no código.
+Quando o dia for definido, preencha `EVENT_DATE` no arquivo `.env` no formato `2027-01-DD`.
 
-## Rodar com Docker Compose
+## Executar localmente
 
-1. Copie `.env.example` para `.env`.
-2. Gere duas senhas independentes:
+Requisitos: Docker e Docker Compose.
+
+1. Crie seu arquivo de configuração:
+
+   ```bash
+   cp .env.example .env
+   nano .env
+   ```
+
+2. Gere duas senhas, executando o comando abaixo duas vezes:
 
    ```bash
    openssl rand -hex 32
-   openssl rand -hex 32
    ```
 
-   Use uma em `DB_PASSWORD` (conta de migração PostgreSQL) e a outra em `APP_DB_PASSWORD` (credencial do papel runtime `event_app`). O Compose monta a senha runtime na URL de conexão do app.
-3. Defina `ADMIN_EMAIL` e crie o hash da senha administrativa sem gravar a senha em texto puro:
+   Use uma em `DB_PASSWORD` e outra em `APP_DB_PASSWORD` no `.env`. Defina também `ADMIN_EMAIL` com seu e-mail.
+
+3. Gere a senha do painel:
 
    ```bash
    npm install
    npm run admin:hash
    ```
 
-   Copie `ADMIN_PASSWORD_SALT` e `ADMIN_PASSWORD_HASH` para `.env`. Nunca versione ou compartilhe `.env`.
-4. Inicie os serviços:
+   Digite uma senha com pelo menos 14 caracteres. Copie os valores exibidos para `ADMIN_PASSWORD_SALT` e `ADMIN_PASSWORD_HASH` no `.env`.
+
+4. Inicie a aplicação:
 
    ```bash
-   docker compose up --build
+   sudo docker compose up --build -d
+   sudo docker compose ps
    ```
 
-A página pública fica em `http://localhost:3000`; o painel, em `http://localhost:3000/admin.html`. O serviço `migrate` aplica o schema e configura o evento antes de iniciar a API. O volume do PostgreSQL mantém os dados.
+Abra no navegador:
 
-Para executar fora do Compose, configure `DATABASE_MIGRATION_URL`, `APP_DB_PASSWORD` e `DATABASE_URL` separadamente. `npm run db:init` exige uma credencial de migração com permissão para gerenciar roles e schema (e contornar RLS durante a configuração inicial). Inicie a API com uma conexão `DATABASE_URL` do papel `event_app`; não use a conta de migração no servidor web.
+- Página de inscrições: <http://localhost:3000>
+- Painel da organização: <http://localhost:3000/admin.html>
 
-## Camadas de segurança implementadas
+Para acompanhar os registros de execução: `sudo docker compose logs -f app`.
+Para encerrar: `sudo docker compose down`. Os dados permanecem salvos no volume do banco.
 
-- `event_app` é criado sem `SUPERUSER`, `BYPASSRLS`, criação de banco/roles ou herança de privilégios. O container `app` não recebe a URL nem a senha de migração.
-- RLS com `FORCE ROW LEVEL SECURITY` nas tabelas de eventos, inscrições e sessões. O contexto do evento é definido dentro de uma transação para cada operação, evitando vazamento pelo pool de conexões.
-- Inscrição pública tem apenas `INSERT` nas colunas necessárias e fica limitada ao evento ativo pelas políticas. Consultas e check-in exigem hash de cookie de sessão administrativa ativo no banco.
-- Sessões usam token aleatório em cookie `HttpOnly`, `SameSite=Strict` (e `Secure` em produção); somente o hash SHA-256 é persistido. Login e inscrição têm rate limit, mutações verificam origem e as queries usam parâmetros.
-- A capacidade é atualizada atomicamente por trigger. A função `SECURITY DEFINER` pertence a um papel sem login, sem superusuário e com acesso somente à tabela de capacidade. O papel runtime não pode consultar ou editar diretamente essa tabela.
-- Helmet/CSP, limite de payload, validação no servidor, mensagens de erro sem detalhes internos e service worker sem cache de `/api/`.
-
-RLS é uma camada de defesa adicional: comprometimento total das credenciais runtime ainda permite operações concedidas ao papel `event_app`. Proteja também o segredo, o host do banco, o proxy e o ambiente de execução.
-
-## API
-
-- `GET /api/event`: configuração pública do evento ativo.
-- `POST /api/registrations`: valida e registra inscrição; trata e-mail repetido e capacidade cheia.
-- `POST /api/admin/login`, `GET /api/admin/session`, `POST /api/admin/logout`: sessão administrativa.
-- `GET /api/admin/registrations`: busca paginada, autenticada.
-- `PATCH /api/admin/registrations/:id/check-in`: registra ou desfaz check-in, autenticado.
-
-## Testes
+## Desenvolvimento e testes
 
 ```bash
+npm install
 npm test
-npm audit --omit=dev
 ```
 
-Os testes unitários cobrem validação/normalização. Testes reais de API e políticas RLS precisam de PostgreSQL disponível. Para produção, confirme também HTTPS no proxy, backups e restore, domínio, política de privacidade/consentimento e operação do e-mail de confirmação.
+## Configuração e segurança
 
-Com várias réplicas da API, substitua o rate limiter em memória por um store compartilhado. O app ainda não envia e-mails nem oferece redefinição de senha; para trocar credenciais administrativas, gere novo salt/hash e reinicie com os valores atualizados.
+As configurações do evento e do painel ficam no `.env`. Não compartilhe esse arquivo nem o envie ao GitHub; use `.env.example` como modelo. Se alguma senha for exposta, gere outra e atualize a configuração.
+
+O projeto não envia e-mails de confirmação. O dia do evento deve ser atualizado depois de confirmado pela organização.
