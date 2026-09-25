@@ -9,7 +9,8 @@
     "dev": "node --watch src/server.js",
     "db:init": "node scripts/init-db.js",
     "admin:hash": "node scripts/hash-admin-password.js",
-    "test": "node --test"
+    "test": "node --test",
+    "test:integration": "node --test tests/postgres.integration.test.js"
   },
   "dependencies": {
     "dotenv": "^16.4.7",
