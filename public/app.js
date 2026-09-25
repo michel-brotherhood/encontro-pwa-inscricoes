@@ -2,27 +2,72 @@ const form = document.querySelector('#registration-form');
 const message = document.querySelector('#form-message');
 const dialog = document.querySelector('#success-dialog');
 const submitButton = form.querySelector('[type="submit"]');
+const retryEventButton = document.querySelector('#retry-event');
 let latestRegistration = null;
-let eventDetails = { monthLabel: 'Janeiro de 2027', startTime: '11:00', venueName: 'Clube Canto do Rio', eventDate: null };
+let eventDetails = null;
 const formatEventTime = (time) => time.endsWith(':00') ? `${time.slice(0, 2)}h` : `${time}h`;
+const formatEventDate = (date) => {
+  const [year, month, day] = date.split('-');
+  return `${day}/${month}/${year}`;
+};
 
 async function loadEventDetails() {
+  submitButton.disabled = true;
+  retryEventButton.hidden = true;
+  retryEventButton.disabled = true;
+  message.textContent = 'Carregando informações do evento…';
+
   try {
     const response = await fetch('/api/event');
     if (!response.ok) throw new Error('Evento indisponível');
-    eventDetails = await response.json();
+    const details = await response.json();
+    if (
+      typeof details?.monthLabel !== 'string' || !details.monthLabel.trim() ||
+      typeof details?.startTime !== 'string' || !/^\d{2}:\d{2}$/.test(details.startTime) ||
+      typeof details?.venueName !== 'string' || !details.venueName.trim() ||
+      (details.eventDate !== null && (typeof details.eventDate !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(details.eventDate)))
+    ) throw new Error('Configuração do evento inválida');
+
+    eventDetails = details;
     document.querySelector('#event-month').textContent = eventDetails.monthLabel;
     document.querySelector('#event-time').textContent = formatEventTime(eventDetails.startTime.slice(0, 5));
     document.querySelector('#event-venue').textContent = eventDetails.venueName;
+    document.querySelector('#event-date-note').textContent = eventDetails.eventDate
+      ? `Data: ${formatEventDate(eventDetails.eventDate)}`
+      : 'Dia exato a confirmar';
+
+    const eventSummary = `${eventDetails.monthLabel} · ${formatEventTime(eventDetails.startTime.slice(0, 5))} · ${eventDetails.venueName}`;
+    document.querySelector('#event-summary-footer').textContent = eventSummary;
+    document.querySelector('#event-summary-schedule').textContent = eventSummary;
+    document.querySelector('#event-summary-signup').textContent = `Inscrição individual. ${eventSummary}. ${eventDetails.eventDate ? `Data confirmada: ${formatEventDate(eventDetails.eventDate)}.` : 'Dia exato a confirmar.'}`;
+    message.textContent = '';
+    submitButton.disabled = false;
   } catch {
-    // Mantém os dados de demonstração visíveis; inscrições continuam sujeitas à API.
+    eventDetails = null;
+    document.querySelector('#event-month').textContent = 'Evento indisponível';
+    document.querySelector('#event-time').textContent = '—';
+    document.querySelector('#event-venue').textContent = 'Local a confirmar';
+    document.querySelector('#event-date-note').textContent = 'Data a confirmar';
+    document.querySelector('#event-summary-footer').textContent = 'Informações do evento indisponíveis no momento';
+    document.querySelector('#event-summary-schedule').textContent = 'Informações do evento indisponíveis no momento';
+    document.querySelector('#event-summary-signup').textContent = 'Não foi possível carregar as informações do evento.';
+    message.textContent = 'Não foi possível carregar as informações do evento. Confira sua conexão e tente novamente.';
+    retryEventButton.hidden = false;
+  } finally {
+    retryEventButton.disabled = false;
   }
 }
-const eventReady = loadEventDetails();
+retryEventButton.addEventListener('click', loadEventDetails);
+loadEventDetails();
 
 form.addEventListener('submit', async (event) => {
   event.preventDefault();
   message.textContent = '';
+  if (!eventDetails) {
+    message.textContent = 'As informações do evento ainda não estão disponíveis. Tente carregá-las novamente.';
+    retryEventButton.hidden = false;
+    return;
+  }
   if (!form.reportValidity()) return;
 
   const data = new FormData(form);
@@ -38,7 +83,6 @@ form.addEventListener('submit', async (event) => {
   submitButton.querySelector('span').textContent = '…';
 
   try {
-    await eventReady;
     const response = await fetch('/api/registrations', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -66,7 +110,7 @@ form.addEventListener('submit', async (event) => {
   } catch {
     message.textContent = 'Não foi possível conectar ao servidor. Confira sua conexão e tente novamente.';
   } finally {
-    submitButton.disabled = false;
+    submitButton.disabled = !eventDetails;
     submitButton.removeAttribute('aria-busy');
     submitButton.querySelector('span').textContent = '↗';
   }
