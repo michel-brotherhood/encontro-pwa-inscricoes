@@ -44,6 +44,7 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .hero-actions { display: flex; align-items: center; gap: 25px; flex-wrap: wrap; margin-top: 31px; }
 .button { border: 0; min-height: 52px; padding: 0 20px; display: inline-flex; gap: 25px; align-items: center; justify-content: space-between; font-size: 13px; font-weight: 700; cursor: pointer; transition: transform .2s, background .2s; }
 .button:hover { transform: translateY(-2px); }
+.button:disabled, .button:disabled:hover { opacity: .55; cursor: not-allowed; transform: none; }
 .button-primary { background: var(--blue); color: var(--beige); }
 .button-primary:hover { background: var(--purple); }
 .text-link { font-size: 13px; font-weight: 600; }
@@ -113,6 +114,9 @@ button, a { -webkit-tap-highlight-color: transparent; }
 .form-foot { font-size: 10px; color: var(--blue); line-height: 1.5; }
 .form-message { font-size: 12px; min-height: 18px; color: var(--magenta); }
 .form-message:empty { display: none; }
+#retry-event[hidden] { display: none; }
+.event-retry { align-self: flex-start; margin: 2px 0 12px; border: 0; padding: 8px 0; background: none; color: var(--magenta); text-decoration: underline; cursor: pointer; }
+.event-retry:disabled { opacity: .55; cursor: wait; }
 footer { padding: 25px max(5vw, calc((100vw - var(--content))/2)); display: flex; justify-content: space-between; align-items: center; gap: 14px; background: var(--navy); color: var(--beige); }
 footer .brand-mark { color: var(--navy); background: var(--gray); }
 footer .brand-dot { color: var(--gray); }
