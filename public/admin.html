@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#081849">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Gestão de inscrições — Encontro</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="admin.css">
+</head>
+<body class="admin-page">
+  <header class="topbar admin-topbar">
+    <a class="brand" href="/" aria-label="Encontro, início"><span class="brand-mark">E</span><span>ENCONTRO<span class="brand-dot">.</span></span></a>
+    <a class="admin-back" href="/">Voltar ao evento ↗</a>
+  </header>
+  <main class="admin-main">
+    <section id="login-view" class="login-card" aria-labelledby="login-title">
+      <p class="eyebrow">ÁREA RESTRITA</p>
+      <h1 id="login-title">Gestão de<br><em>inscrições.</em></h1>
+      <p>Acesse com as credenciais administrativas configuradas no servidor.</p>
+      <form id="login-form">
+        <label for="admin-email">E-mail</label>
+        <input id="admin-email" name="email" type="email" autocomplete="username" required maxlength="254">
+        <label for="admin-password">Senha</label>
+        <input id="admin-password" name="password" type="password" autocomplete="current-password" required maxlength="256">
+        <button class="button button-primary" type="submit">Entrar <span aria-hidden="true">↗</span></button>
+        <p id="login-message" class="form-message" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+    <section id="dashboard-view" class="dashboard" hidden aria-labelledby="dashboard-title">
+      <div class="dashboard-heading">
+        <div><p class="eyebrow">ÁREA RESTRITA</p><h1 id="dashboard-title">Inscrições</h1></div>
+        <button id="logout-button" class="logout-button" type="button">Sair</button>
+      </div>
+      <div class="dashboard-tools">
+        <label class="sr-only" for="search-input">Buscar por nome ou e-mail</label>
+        <input id="search-input" type="search" placeholder="Buscar nome ou e-mail">
+        <button id="search-button" class="button button-primary" type="button">Buscar</button>
+        <button id="export-button" class="button button-secondary" type="button">Exportar CSV ↓</button>
+      </div>
+      <p id="dashboard-status" class="dashboard-status" role="status" aria-live="polite"></p>
+      <div class="registration-table-wrap">
+        <table class="registration-table">
+          <thead><tr><th>Participante</th><th>Contato</th><th>Inscrito em</th><th>Check-in</th></tr></thead>
+          <tbody id="registration-rows"></tbody>
+        </table>
+      </div>
+      <div id="registration-cards" class="registration-cards"></div>
+      <nav class="pagination-controls" aria-label="Paginação das inscrições"><button id="previous-page" type="button" disabled>← Anterior</button><span id="page-label">Página 1</span><button id="next-page" type="button" disabled>Próxima →</button></nav>
+      <p class="admin-data-note">Os dados pessoais ficam visíveis somente para administradores autenticados. Exporte apenas o necessário e proteja o arquivo.</p>
+    </section>
+  </main>
+  <script type="module" src="admin.js"></script>
+</body>
+</html>

@@ -1,0 +1,56 @@
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: event
+      POSTGRES_USER: event
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?Defina DB_PASSWORD no .env}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U event -d event"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    build: .
+    command: ["npm", "run", "db:init"]
+    restart: "no"
+    environment:
+      DATABASE_MIGRATION_URL: postgres://event:${DB_PASSWORD}@db:5432/event
+      APP_DB_PASSWORD: ${APP_DB_PASSWORD:?Defina APP_DB_PASSWORD no .env}
+      EVENT_KEY: ${EVENT_KEY:-encontro-janeiro-2027}
+      EVENT_TITLE: ${EVENT_TITLE:-Encontro de Ideias}
+      EVENT_MONTH_START: ${EVENT_MONTH_START:-2027-01-01}
+      EVENT_DATE: ${EVENT_DATE:-}
+      EVENT_START_TIME: ${EVENT_START_TIME:-11:00}
+      EVENT_VENUE: ${EVENT_VENUE:-Clube Canto do Rio}
+      REGISTRATION_LIMIT: ${REGISTRATION_LIMIT:-}
+      CONSENT_VERSION: ${CONSENT_VERSION:-v1}
+    depends_on:
+      db:
+        condition: service_healthy
+
+  app:
+    build: .
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgres://event_app:${APP_DB_PASSWORD}@db:5432/event
+      EVENT_KEY: ${EVENT_KEY:-encontro-janeiro-2027}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?Defina ADMIN_EMAIL no .env}
+      ADMIN_PASSWORD_SALT: ${ADMIN_PASSWORD_SALT:?Defina ADMIN_PASSWORD_SALT no .env}
+      ADMIN_PASSWORD_HASH: ${ADMIN_PASSWORD_HASH:?Defina ADMIN_PASSWORD_HASH no .env}
+      SESSION_TTL_HOURS: ${SESSION_TTL_HOURS:-8}
+      CONSENT_VERSION: ${CONSENT_VERSION:-v1}
+      NODE_ENV: production
+      TRUST_PROXY: "true"
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    ports:
+      - "127.0.0.1:3000:3000"
+
+volumes:
+  postgres_data:

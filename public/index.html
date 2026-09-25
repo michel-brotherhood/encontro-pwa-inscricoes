@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#081849">
+  <meta name="description" content="Inscreva-se no encontro e conecte ideias, pessoas e novas possibilidades.">
+  <title>Encontro — Inscrições</title>
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="#inicio" aria-label="Encontro, início"><span class="brand-mark">E</span><span>ENCONTRO<span class="brand-dot">.</span></span></a>
+    <button class="menu-toggle" id="menu-toggle" type="button" aria-expanded="false" aria-controls="main-nav" aria-label="Abrir menu"><span></span><span></span></button><nav id="main-nav" aria-label="Navegação principal"><a href="#sobre">O evento</a><a href="#agenda">Programação</a><a href="#inscricao" class="nav-cta">Inscreva-se <span aria-hidden="true">↗</span></a><button id="install-app" class="install-app" type="button" hidden>Instalar app <span aria-hidden="true">↓</span></button></nav>
+  </header>
+
+  <main id="inicio">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-copy">
+        <p class="eyebrow"><span class="live-dot"></span> ENCONTRO PRESENCIAL <span class="eyebrow-divider">/</span> INSCRIÇÕES</p>
+        <h1 id="hero-title">Ideias que<br>movem o <em>amanhã.</em></h1>
+        <p class="hero-lede">Um dia para trocar experiências, descobrir caminhos e sair com novas conexões. O próximo passo começa quando a gente se encontra.</p>
+        <div class="hero-actions"><a class="button button-primary" href="#inscricao">Quero participar <span aria-hidden="true">↗</span></a><a class="text-link" href="#sobre">Conheça o encontro <span aria-hidden="true">↓</span></a></div>
+        <div class="hero-meta"><div><strong id="event-month">Janeiro de 2027</strong><span id="event-time">11h</span></div><div><strong id="event-venue">Clube Canto do Rio</strong><span>Dia exato a confirmar</span></div></div>
+      </div>
+      <div class="hero-art" aria-label="Ilustração abstrata em tons verde e amarelo" role="img"><div class="art-ring ring-one"></div><div class="art-ring ring-two"></div><div class="art-orb"></div><div class="art-caption">IDEIAS EM<br>MOVIMENTO <span>↗</span></div><div class="art-index">01 — 26</div></div>
+      <div class="hero-bottom"><span>JANEIRO 2027 · 11H · CLUBE CANTO DO RIO</span><span>DESLIZE PARA EXPLORAR ↓</span></div>
+    </section>
+
+    <section class="intro section" id="sobre">
+      <div class="section-label"><span>01 / SOBRE</span><span>UM DIA, NOVAS POSSIBILIDADES</span></div>
+      <div class="intro-grid"><h2>Mais que um evento.<br><em>Um ponto de partida.</em></h2><div class="intro-text"><p>Uma experiência presencial para quem acredita que boas conversas podem abrir novos caminhos. Reunimos conteúdo, troca e conexões em um ambiente feito para aprender e participar.</p><p>Venha com curiosidade. Saia com ideias para colocar em prática.</p></div></div>
+      <div class="feature-row"><article><span>01</span><h3>Conteúdo que inspira</h3><p>Conversas práticas com pessoas que fazem acontecer.</p></article><article><span>02</span><h3>Conexões de verdade</h3><p>Encontre gente com interesses e desafios parecidos.</p></article><article><span>03</span><h3>Ideias em ação</h3><p>Leve referências e próximos passos para o seu dia a dia.</p></article></div>
+    </section>
+
+    <section class="schedule section" id="agenda">
+      <div class="section-label"><span>02 / PROGRAMAÇÃO</span><span>JANEIRO DE 2027 · 11H</span></div>
+      <div class="schedule-head"><h2>Um dia para<br><em>fazer acontecer.</em></h2><p>A sequência abaixo é uma estrutura inicial. Horários, atividades e convidados serão definidos pela organização.</p></div>
+      <div class="timeline"><div><time>01</time><strong>Recepção & credenciamento</strong><span>Detalhes da chegada serão publicados pela organização</span><b>↗</b></div><div><time>02</time><strong>Conteúdo & conversas</strong><span>Temas e participantes a definir</span><b>↗</b></div><div><time>03</time><strong>Atividades & trocas</strong><span>Formato e horários a divulgar</span><b>↗</b></div><div><time>04</time><strong>Encerramento</strong><span>Informações completas serão atualizadas nesta página</span><b>↗</b></div></div>
+    </section>
+
+    <section class="signup" id="inscricao">
+      <div class="signup-copy"><div class="section-label"><span>03 / SUA VAGA</span><span>INSCRIÇÃO INDIVIDUAL</span></div><h2>Vamos nos<br><em>encontrar?</em></h2><p>Preencha seus dados para registrar sua inscrição. Após o envio, o sistema apresentará um comprovante com o código de registro.</p><div class="signup-note"><span>↗</span><p>Inscrição individual.<br>Janeiro de 2027 · 11h · Clube Canto do Rio. Dia exato a confirmar.</p></div></div>
+      <form id="registration-form" class="signup-form" novalidate>
+        <label for="name">Nome completo <span>*</span></label><input id="name" name="name" autocomplete="name" required minlength="3" placeholder="Como podemos chamar você?">
+        <label for="email">E-mail <span>*</span></label><input id="email" name="email" type="email" autocomplete="email" required placeholder="voce@exemplo.com">
+        <label for="phone">WhatsApp <span>*</span></label><input id="phone" name="phone" type="tel" autocomplete="tel" inputmode="tel" required placeholder="(21) 99999-9999">
+        <label for="interest">O que mais te interessa?</label><select id="interest" name="interest"><option value="">Selecione uma opção</option><option>Conteúdo e aprendizagem</option><option>Networking e conexões</option><option>Novas oportunidades</option><option>Quero conhecer o evento</option></select>
+        <label class="consent"><input type="checkbox" name="consent" required><span>Autorizo o uso dos meus dados para a gestão desta inscrição. <b>*</b></span></label>
+        <button class="button button-dark" type="submit">Confirmar minha inscrição <span aria-hidden="true">↗</span></button>
+        <p class="form-foot">Não compartilhe dados sensíveis. Seus dados serão enviados com segurança para registrar a inscrição.</p>
+        <p id="form-message" class="form-message" role="status" aria-live="polite"></p>
+      </form>
+    </section>
+  </main>
+  <footer><a class="brand" href="#inicio"><span class="brand-mark">E</span><span>ENCONTRO<span class="brand-dot">.</span></span></a><span>IDEIAS EM MOVIMENTO</span><a href="#inicio">VOLTAR AO TOPO ↑</a></footer><a class="mobile-signup" href="#inscricao">Fazer inscrição <span aria-hidden="true">↗</span></a>
+  <dialog id="success-dialog" aria-labelledby="success-title"><button class="dialog-close" aria-label="Fechar">×</button><div class="success-icon">✓</div><p class="eyebrow">INSCRIÇÃO CONFIRMADA</p><h2 id="success-title">Inscrição<br><em>registrada.</em></h2><p id="success-summary"></p><div class="ticket" id="ticket"></div><div class="dialog-actions"><button class="button button-dark" id="download-ticket">Salvar comprovante <span>↓</span></button><button class="text-link" id="close-dialog">Fechar</button></div></dialog>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
