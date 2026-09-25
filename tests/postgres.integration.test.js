@@ -119,11 +119,11 @@ test('RLS limita eventos e inscrições e exige sessão administrativa ativa par
     const hiddenRegistrations = await client.query('SELECT email FROM registrations');
     assert.equal(hiddenRegistrations.rowCount, 0);
 
+    await client.query("SELECT set_config('app.session_hash', $1, true)", [sessionHash]);
     await client.query(
       'INSERT INTO admin_sessions (token_hash, expires_at) VALUES ($1, NOW() + INTERVAL \'1 hour\')',
       [sessionHash]
     );
-    await client.query("SELECT set_config('app.session_hash', $1, true)", [sessionHash]);
     const visibleRegistrations = await client.query('SELECT email FROM registrations ORDER BY email');
     assert.deepEqual(visibleRegistrations.rows.map(row => row.email), [emailA]);
 
