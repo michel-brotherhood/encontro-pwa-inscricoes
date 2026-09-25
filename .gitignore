@@ -14,3 +14,11 @@ cat >> .gitignore <<'EOF'
 *.backup
 *.zip
 EOF
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.dump
+*.backup
