@@ -30,12 +30,23 @@ async function createEvent({ capacity = null } = {}) {
 }
 
 async function createRegistration(eventKey, email) {
-  await migrationPool.query(
-    `INSERT INTO registrations
-       (id, event_key, full_name, email, phone, consent_at, consent_version)
-     VALUES ($1, $2, 'Pessoa de teste', $3, '21999999999', NOW(), 'test')`,
-    [crypto.randomUUID(), eventKey, email]
-  );
+  const client = await migrationPool.connect();
+  try {
+    await client.query('BEGIN');
+    await client.query("SELECT set_config('app.event_key', $1, true)", [eventKey]);
+    await client.query(
+      `INSERT INTO registrations
+         (id, event_key, full_name, email, phone, consent_at, consent_version)
+       VALUES ($1, $2, 'Pessoa de teste', $3, '21999999999', NOW(), 'test')`,
+      [crypto.randomUUID(), eventKey, email]
+    );
+    await client.query('COMMIT');
+  } catch (error) {
+    await client.query('ROLLBACK').catch(() => {});
+    throw error;
+  } finally {
+    client.release();
+  }
 }
 
 async function withRuntimeTransaction(eventKey, sessionHash, operation) {
