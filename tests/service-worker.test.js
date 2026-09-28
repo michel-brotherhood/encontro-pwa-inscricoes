@@ -5,16 +5,17 @@ import vm from 'node:vm';
 
 const workerSource = await readFile(new URL('../public/sw.js', import.meta.url), 'utf8');
 
-function createWorker() {
+function createWorker(cacheKeys = ['encontro-pwa-v7']) {
   const listeners = new Map();
+  const deletedCaches = [];
   const cachedPage = new Response('<!doctype html><title>Encontro</title>', {
     headers: { 'Content-Type': 'text/html' }
   });
   const cache = { addAll: async () => {}, put: async () => {} };
   const caches = {
     open: async () => cache,
-    keys: async () => ['encontro-pwa-v6'],
-    delete: async () => true,
+    keys: async () => cacheKeys,
+    delete: async key => { deletedCaches.push(key); return true; },
     match: async request => request === './index.html' ? cachedPage : null
   };
   const self = {
@@ -32,7 +33,7 @@ function createWorker() {
     Promise,
     fetch: async () => { throw new TypeError('offline'); }
   });
-  return { fetchHandler: listeners.get('fetch'), cachedPage };
+  return { listeners, deletedCaches, cachedPage };
 }
 
 function dispatchFetch(fetchHandler, request) {
@@ -42,8 +43,8 @@ function dispatchFetch(fetchHandler, request) {
 }
 
 test('uses the cached page only as an offline navigation fallback', async () => {
-  const { fetchHandler, cachedPage } = createWorker();
-  const response = await dispatchFetch(fetchHandler, {
+  const { listeners, cachedPage } = createWorker();
+  const response = await dispatchFetch(listeners.get('fetch'), {
     url: 'https://app.test/inscricao',
     method: 'GET',
     mode: 'navigate'
@@ -53,8 +54,8 @@ test('uses the cached page only as an offline navigation fallback', async () => 
 });
 
 test('does not return HTML when an uncached asset fails offline', async () => {
-  const { fetchHandler } = createWorker();
-  const response = await dispatchFetch(fetchHandler, {
+  const { listeners } = createWorker();
+  const response = await dispatchFetch(listeners.get('fetch'), {
     url: 'https://app.test/app.js',
     method: 'GET',
     mode: 'same-origin'
@@ -64,12 +65,26 @@ test('does not return HTML when an uncached asset fails offline', async () => {
 });
 
 test('leaves API requests outside the service worker cache strategy', () => {
-  const { fetchHandler } = createWorker();
-  const responsePromise = dispatchFetch(fetchHandler, {
+  const { listeners } = createWorker();
+  const responsePromise = dispatchFetch(listeners.get('fetch'), {
     url: 'https://app.test/api/event',
     method: 'GET',
     mode: 'cors'
   });
 
   assert.equal(responsePromise, undefined);
+});
+
+test('deletes only caches owned by this PWA', async () => {
+  const { listeners, deletedCaches } = createWorker([
+    'encontro-pwa-v5',
+    'encontro-pwa-v6',
+    'encontro-pwa-v7',
+    'another-app-cache'
+  ]);
+  let activationPromise;
+  listeners.get('activate')({ waitUntil: promise => { activationPromise = promise; } });
+  await activationPromise;
+
+  assert.deepEqual(deletedCaches, ['encontro-pwa-v5', 'encontro-pwa-v6']);
 });
