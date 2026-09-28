@@ -7,6 +7,7 @@ import helmet from 'helmet';
 import { rateLimit } from 'express-rate-limit';
 import { pool } from './db.js';
 import { validateRegistration } from './validation.js';
+import { processRegistration } from './registration.js';
 
 const currentDir = path.dirname(fileURLToPath(import.meta.url));
 const publicDir = path.resolve(currentDir, '../public');
@@ -128,14 +129,13 @@ app.post('/api/registrations', registrationLimiter, async (req, res, next) => {
   const id = crypto.randomUUID();
   const { fullName, email, phone, interest } = validation.value;
   try {
-    await withDbContext('', client => client.query(
+    const result = await processRegistration(() => withDbContext('', client => client.query(
       `INSERT INTO registrations (id, event_key, full_name, email, phone, interest, consent_at, consent_version)
        VALUES ($1, $2, $3, $4, $5, $6, NOW(), $7)`,
       [id, eventKey, fullName, email, phone, interest, consentVersion]
-    ));
-    return res.status(201).json({ id });
+    )));
+    return res.status(result.status).json(result.body);
   } catch (error) {
-    if (error.code === '23505') return res.status(409).json({ error: 'Este e-mail já está inscrito neste evento.' });
     if (error.code === 'P0001' && error.message === 'EVENT_FULL') return res.status(409).json({ error: 'As vagas deste evento foram preenchidas.' });
     next(error);
   }

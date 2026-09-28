@@ -3,7 +3,6 @@ const message = document.querySelector('#form-message');
 const dialog = document.querySelector('#success-dialog');
 const submitButton = form.querySelector('[type="submit"]');
 const retryEventButton = document.querySelector('#retry-event');
-let latestRegistration = null;
 let eventDetails = null;
 const formatEventTime = (time) => time.endsWith(':00') ? `${time.slice(0, 2)}h` : `${time}h`;
 const formatEventDate = (date) => {
@@ -94,17 +93,7 @@ form.addEventListener('submit', async (event) => {
       if (result.field && form.elements.namedItem(result.field)) form.elements.namedItem(result.field).focus();
       return;
     }
-    latestRegistration = { ...payload, ...result };
-    document.querySelector('#success-summary').textContent = `Obrigado, ${payload.name.split(' ')[0]}. Sua inscrição foi registrada no sistema.`;
-    const ticket = document.querySelector('#ticket');
-    ticket.replaceChildren();
-    const code = document.createElement('strong');
-    code.textContent = result.id;
-    const details = document.createElement('span');
-    details.textContent = `${eventDetails.monthLabel} · ${formatEventTime(eventDetails.startTime.slice(0, 5))} · ${eventDetails.venueName}${eventDetails.eventDate ? ` · ${eventDetails.eventDate}` : ' · dia exato a confirmar'}`;
-    const attendee = document.createElement('span');
-    attendee.textContent = payload.name;
-    ticket.append(code, document.createElement('br'), details, document.createElement('br'), attendee);
+    document.querySelector('#success-summary').textContent = result.message;
     dialog.showModal();
     form.reset();
   } catch {
@@ -119,17 +108,7 @@ form.addEventListener('submit', async (event) => {
 function closeDialog() { dialog.close(); }
 document.querySelector('.dialog-close').addEventListener('click', closeDialog);
 document.querySelector('#close-dialog').addEventListener('click', closeDialog);
-document.querySelector('#download-ticket').addEventListener('click', () => {
-  if (!latestRegistration) return;
-  const eventDate = eventDetails.eventDate ? `Data: ${eventDetails.eventDate}` : `Dia exato: a confirmar pela organização`;
-  const content = `COMPROVANTE DE INSCRIÇÃO\n\nEncontro — Ideias que movem o amanhã\n${eventDetails.monthLabel}, às ${formatEventTime(eventDetails.startTime.slice(0, 5))}\nLocal: ${eventDetails.venueName}\n${eventDate}\n\nParticipante: ${latestRegistration.name}\nCódigo: ${latestRegistration.id}\nE-mail: ${latestRegistration.email}\n\nGuarde este comprovante.`;
-  const objectUrl = URL.createObjectURL(new Blob([content], { type: 'text/plain;charset=utf-8' }));
-  const link = document.createElement('a');
-  link.href = objectUrl;
-  link.download = `inscricao-${latestRegistration.id}.txt`;
-  link.click();
-  setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
-});
+
 
 const menuToggle = document.querySelector('#menu-toggle');
 const mainNav = document.querySelector('#main-nav');
