@@ -189,3 +189,27 @@ test('a capacidade é aplicada atomicamente quando duas inscrições chegam junt
   );
   assert.deepEqual(rows[0], { registered_count: 1, registrations_count: 1 });
 });
+
+
+test('a duplicate email does not consume another event capacity slot', {
+  skip: enabled ? false : 'Configure TEST_DATABASE_URL e TEST_DATABASE_MIGRATION_URL para executar testes PostgreSQL.'
+}, async () => {
+  const eventKey = await createEvent({ capacity: 2 });
+  const email = `${crypto.randomUUID()}@test.invalid`;
+
+  await insertAsRuntime(eventKey, email);
+  await assert.rejects(
+    insertAsRuntime(eventKey, email),
+    error => error.code === '23505' && error.constraint === 'registrations_event_email_unique'
+  );
+
+  const { rows } = await migrationPool.query(
+    `SELECT c.registered_count, COUNT(r.id)::int AS registrations_count
+     FROM event_capacity c
+     LEFT JOIN registrations r ON r.event_key = c.event_key
+     WHERE c.event_key = $1
+     GROUP BY c.registered_count`,
+    [eventKey]
+  );
+  assert.deepEqual(rows[0], { registered_count: 1, registrations_count: 1 });
+});
