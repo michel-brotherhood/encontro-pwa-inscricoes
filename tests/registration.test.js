@@ -12,7 +12,7 @@ test('new and duplicate registration requests return the same public response', 
   });
 
   assert.deepEqual(duplicate, created);
-  assert.equal(created.status, 202);
+  assert.equal(created.status, 200);
   assert.equal('id' in created.body, false);
   assert.match(created.body.message, /organização/);
 });
